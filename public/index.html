@@ -46,7 +46,7 @@
                 return;
             }
             document.getElementById('message').innerText = 'Sending OTP...';
-            const result = await sendRequest('http://13.229.129.164:5000/send_otp', { phone });
+            const result = await sendRequest('https://api.khcrack.store/send_otp', { phone });
             if (result.error) {
                 document.getElementById('message').innerText = result.error;
             } else {
@@ -64,7 +64,7 @@
                 return;
             }
             document.getElementById('message').innerText = 'Verifying OTP...';
-            const result = await sendRequest('http://13.229.129.164:5000/verify_otp', { phone, otp });
+            const result = await sendRequest('https://api.khcrack.store/verify_otp', { phone, otp });
             document.getElementById('message').innerText = result.message || result.error;
             if (!result.error) {
                 document.getElementById('otp-form').classList.add('hidden');
